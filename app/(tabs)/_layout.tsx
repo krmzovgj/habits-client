@@ -1,35 +1,39 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from "@/constants/theme";
+import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
-  return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
-  );
+    return (
+        <NativeTabs>
+            <NativeTabs.Trigger
+                options={{
+                    labelStyle: {
+                        fontFamily: "onest",
+                        fontSize: 11,
+                        fontWeight: "500",
+                    },
+                    selectedIconColor: Colors.text,
+                    iconColor: Colors.text + "4A",
+                }}
+                name="index"
+            >
+                <Label>Habits</Label>
+                <Icon sf="arrow.2.circlepath.circle.fill" />
+            </NativeTabs.Trigger>
+            <NativeTabs.Trigger
+                options={{
+                    labelStyle: {
+                        fontFamily: "onest",
+                        fontSize: 11,
+                        fontWeight: "500",
+                    },
+                    selectedIconColor: Colors.text,
+                    iconColor: Colors.text + "4A",
+                }}
+                name="profile"
+            >
+                <Icon sf="person.crop.circle.fill" />
+                <Label>Profile</Label>
+            </NativeTabs.Trigger>
+        </NativeTabs>
+    );
 }

@@ -7,7 +7,7 @@ import { Colors } from "@/constants/theme";
 
 const Profile = () => {
     return (
-        <SafeAreaView style={{ padding: 10, paddingHorizontal: 20, flex: 1 }}>
+        <SafeAreaView style={{ padding: 20, flex: 1 }}>
             <Header
                 title="Profile"
                 headerRight={
@@ -21,7 +21,7 @@ const Profile = () => {
                     alignItems: "center",
                 }}
             >
-                <Text style={styles.text}>Habits</Text>
+                <Text style={styles.text}>Profile</Text>
             </View>
         </SafeAreaView>
     );

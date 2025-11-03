@@ -1,7 +1,9 @@
+import { Colors } from "@/constants/theme";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
+import { loadAuthToken, useAuthStore } from "./store/auth-store";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -10,6 +12,8 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
+    const [loading, setLoading] = useState(true);
+    const token = useAuthStore((state) => state.token);
     const [fontsLoaded, error] = useFonts({
         onest: require("../assets/fonts/Onest-VariableFont_wght.ttf"),
     });
@@ -19,28 +23,39 @@ export default function RootLayout() {
     }, [error]);
 
     useEffect(() => {
-        if (fontsLoaded) {
+        if (fontsLoaded && !loading) {
             SplashScreen.hideAsync();
         }
-    }, [fontsLoaded]);
+    }, [fontsLoaded, loading]);
 
-    if (!fontsLoaded) {
-        return null;
-    }
+    useEffect(() => {
+        const init = async () => {
+            await loadAuthToken();
+            const timer = setTimeout(() => setLoading(false), 1000);
+            return () => clearTimeout(timer);
+        };
+        init();
+    }, []);
 
-    const user = true;
+    if (!fontsLoaded || loading) return null;
 
     return (
         <Stack>
-            <Stack.Protected guard={!!user}>
+            <Stack.Protected guard={!!token}>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen
-                    name="modal"
-                    options={{ presentation: "modal", title: "Modal" }}
+                    name="create-habit"
+                    options={{
+                        presentation: "formSheet",
+                        sheetAllowedDetents: [0.7],
+                        title: "Create Habit",
+                        contentStyle: { backgroundColor: Colors.background },
+                        headerShadowVisible: false,
+                    }}
                 />
             </Stack.Protected>
 
-            <Stack.Protected guard={!user}>
+            <Stack.Protected guard={!token}>
                 <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             </Stack.Protected>
         </Stack>

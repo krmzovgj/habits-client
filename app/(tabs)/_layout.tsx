@@ -1,33 +1,30 @@
-import { Colors } from "@/constants/theme";
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 
 export default function TabLayout() {
     return (
         <NativeTabs>
             <NativeTabs.Trigger
-                options={{
+                name="index"
+                 options={{
                     labelStyle: {
                         fontFamily: "onest",
                         fontSize: 11,
-                        fontWeight: "500",
+                        fontWeight: "500"
                     },
-                    selectedIconColor: Colors.text,
-                    iconColor: Colors.text + "4A",
+                    iconColor: "#000",
                 }}
-                name="index"
             >
-                <Label>Habits</Label>
-                <Icon sf="arrow.2.circlepath.circle.fill" />
+                <Label>Home</Label>
+                <Icon sf='house.fill'  />
             </NativeTabs.Trigger>
             <NativeTabs.Trigger
                 options={{
                     labelStyle: {
                         fontFamily: "onest",
                         fontSize: 11,
-                        fontWeight: "500",
+                        fontWeight: "500"
                     },
-                    selectedIconColor: Colors.text,
-                    iconColor: Colors.text + "4A",
+                    iconColor: "#000",
                 }}
                 name="profile"
             >

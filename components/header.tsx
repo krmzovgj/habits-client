@@ -1,5 +1,6 @@
 import { View, Text } from "react-native";
 import React, { ReactNode } from "react";
+import { Colors } from "@/constants/theme";
 
 type HeaderProps = {
     title: string;
@@ -17,7 +18,7 @@ const Header: React.FC<HeaderProps> = ({ title, headerRight }) => {
             }}
         >
             <Text
-                style={{ fontFamily: "onest", fontWeight: "600", fontSize: 20 }}
+                style={{ color: Colors.text, fontFamily: "onest", fontWeight: "600", fontSize: 20 }}
             >
                 {title}
             </Text>

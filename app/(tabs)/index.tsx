@@ -1,15 +1,135 @@
-import { AddSquare, NotificationBing } from "iconsax-react-nativejs";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Header from "../../components/header";
+import HabitCard from "@/components/habit-card";
 import { Colors } from "@/constants/theme";
+import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
+import { AddSquare, NotificationBing } from "iconsax-react-nativejs";
+import React, { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    FlatList,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import io from "socket.io-client";
+import Header from "../../components/header";
+import { Habit } from "../models/habit";
+import { useAuthStore } from "../store/auth-store";
+import { useUserStore } from "../store/user-store";
 
+const socket = io(process.env.EXPO_PUBLIC_BACKEND_URL!, {
+    transports: ["websocket"],
+});
 const Habits = () => {
+    const { token } = useAuthStore();
+    const { user, setUser } = useUserStore();
+    const [loading, setloading] = useState(false);
+    const [habits, sethabits] = useState<Habit[]>([]);
+
+    const getHabits = async () => {
+        try {
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_BACKEND_URL}/habit`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Origin": "*",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                sethabits(data);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    useEffect(() => {
+        if (!token) return;
+        setloading(true);
+        const getUser = async () => {
+            try {
+                const response = await fetch(
+                    `${process.env.EXPO_PUBLIC_BACKEND_URL}/user/me`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Access-Control-Allow-Origin": "*",
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                if (response.ok) {
+                    const user = await response.json();
+                    setUser(user);
+
+                    socket.emit("joinRoom", { id: user.id });
+                }
+            } catch (error) {
+                console.log(error);
+            } finally {
+                setloading(false);
+            }
+        };
+
+        getUser();
+        getHabits();
+    }, [token]);
+
+    useEffect(() => {
+        if (!user?.id) return;
+
+        socket.on("newHabit", (newHabit: Habit) => {
+            sethabits((prev) => [newHabit, ...prev]);
+        });
+
+        socket.on("habitUpdated", (updatedHabit: Habit) => {
+            sethabits((prev) =>
+                prev.map((habit) =>
+                    habit.id === updatedHabit.id ? updatedHabit : habit
+                )
+            );
+        });
+
+        socket.on("habitDeleted", (habitId: string) => {
+            sethabits((prev) => prev.filter((habit) => habit.id !== habitId));
+        });
+
+        socket.on("habitCompleted", (completedHabit: Habit) => {
+            sethabits((prev) =>
+                prev.map((habit) =>
+                    habit.id === completedHabit.id ? completedHabit : habit
+                )
+            );
+        });
+
+        return () => {
+            socket.off("newHabit");
+            socket.off("habitUpdated");
+            socket.off("habitDeleted");
+        };
+    }, [user]);
+
+    const createHabit = () => {
+        router.push("/create-habit");
+        Haptics.selectionAsync();
+    };
+
     return (
-        <SafeAreaView style={{ padding: 10, paddingHorizontal: 20, flex: 1 }}>
+        <SafeAreaView edges={["top"]} style={{ padding: 20, flex: 1 }}>
             <Header
-                title="Habits"
+                title="Home"
                 headerRight={
                     <View
                         style={{
@@ -19,11 +139,13 @@ const Habits = () => {
                             display: "flex",
                         }}
                     >
-                        <AddSquare
-                            variant="Bold"
-                            size={25}
-                            color={Colors.text}
-                        />
+                        <Pressable onPress={createHabit}>
+                            <AddSquare
+                                variant="Bold"
+                                size={25}
+                                color={Colors.text}
+                            />
+                        </Pressable>
                         <NotificationBing
                             variant="Bold"
                             size={25}
@@ -32,15 +154,103 @@ const Habits = () => {
                     </View>
                 }
             />
-            <View
-                style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}
-            >
-                <Text style={styles.text}>Habits</Text>
-            </View>
+
+            {loading ? (
+                <View
+                    style={{
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <ActivityIndicator size="small" color={Colors.text} />
+                </View>
+            ) : (
+                <View>
+                    <ScrollView
+                        scrollEnabled={habits.length >= 8 ? true : false}
+                        contentContainerStyle={{
+                            paddingBottom: 110,
+
+                            backgroundColor: Colors.background,
+                        }}
+                        refreshControl={
+                            <RefreshControl
+                                onRefresh={getHabits}
+                                refreshing={false}
+                            />
+                        }
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <View
+                            style={{
+                                marginTop: 30,
+                            }}
+                        >
+                            <Text
+                                style={[
+                                    styles.text,
+                                    {
+                                        fontSize: 32,
+                                        fontWeight: 600,
+                                        display: "flex",
+                                        flexDirection: "row",
+                                        alignItems: "center",
+                                    },
+                                ]}
+                            >
+                                Hi {user?.firstName}
+                            </Text>
+
+                            <View style={{ marginTop: 60 }}>
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                    }}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.text,
+                                            { fontWeight: "600", fontSize: 20 },
+                                        ]}
+                                    >
+                                        My Habits
+                                    </Text>
+                                    <Pressable onPress={createHabit}>
+                                        <AddSquare
+                                            variant="Bold"
+                                            size={25}
+                                            color={Colors.text}
+                                        />
+                                    </Pressable>
+                                </View>
+
+                                <FlatList
+                                    ItemSeparatorComponent={() => (
+                                        <View
+                                            style={{ marginVertical: 10 }}
+                                        ></View>
+                                    )}
+                                    style={{
+                                        marginTop: 20,
+                                    }}
+                                    scrollEnabled={false}
+                                    data={habits}
+                                    keyExtractor={(item) => item.id.toString()}
+                                    renderItem={({ item }: { item: Habit }) => (
+                                        <HabitCard
+                                            token={token!}
+                                            habit={item}
+                                        />
+                                    )}
+                                />
+                            </View>
+                        </View>
+                    </ScrollView>
+                </View>
+            )}
         </SafeAreaView>
     );
 };
@@ -51,5 +261,6 @@ const styles = StyleSheet.create({
     text: {
         fontFamily: "onest",
         fontWeight: 500,
+        color: Colors.text,
     },
 });

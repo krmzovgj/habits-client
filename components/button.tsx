@@ -36,7 +36,7 @@ const Button: React.FC<ButtonProps> = ({
             disabled={disabled || loading}
             style={[
                 styles.button,
-                { backgroundColor: disabled ? "#ccc" : backgroundColor, flex: 1 },
+                { backgroundColor: disabled ? "#ccc" : backgroundColor },
                 style,
             ]}
         >

@@ -2,14 +2,25 @@ import { Frequency, Habit } from "@/app/models/habit";
 import { Colors } from "@/constants/theme";
 import { completeHabit } from "@/utils/completeHabit";
 import {
+    Cup,
     RecordCircle,
     RefreshSquare,
     Star1,
     TickCircle,
 } from "iconsax-react-nativejs";
 import React, { useRef } from "react";
-import { Alert, Animated, Easing, Pressable, Text, View } from "react-native";
-import * as Haptic from 'expo-haptics'
+import {
+    Alert,
+    Animated,
+    Easing,
+    Image,
+    Pressable,
+    Text,
+    View,
+} from "react-native";
+import * as Haptic from "expo-haptics";
+import HabitIcon from "../assets/images/habit.svg";
+import { router } from "expo-router";
 
 const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
     const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -32,7 +43,7 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
     };
 
     const handleCompleteHabit = async () => {
-        Haptic.impactAsync()
+        Haptic.impactAsync();
         if (habit.completed) {
             return Alert.alert(
                 `Habit already completed ${
@@ -46,7 +57,13 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
     };
 
     return (
-        <View
+        <Pressable
+            onPress={() => {
+                router.push({
+                    pathname: "/habit-ops",
+                    params: { id: habit.id },
+                });
+            }}
             style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -60,7 +77,7 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
                     alignItems: "center",
                 }}
             >
-                <RefreshSquare variant="Bold" size={46} color={Colors.text} />
+                <HabitIcon width={46} height={46} />
 
                 <View>
                     <View
@@ -77,7 +94,7 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
                                 columnGap: 3,
                             }}
                         >
-                            <Star1
+                            <Cup
                                 variant="Bulk"
                                 size={14}
                                 color={
@@ -89,9 +106,9 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
                             <Text
                                 style={{
                                     fontFamily: "onest",
-                                    fontWeight: 500,
+                                    fontWeight: 600,
                                     fontSize: 14,
-                                    color: Colors.text + "9A",
+                                    color: Colors.text,
                                     marginTop: 1,
                                 }}
                             >
@@ -102,13 +119,13 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
                         <RecordCircle
                             variant="Bold"
                             size={6}
-                            color={Colors.text}
+                            color={Colors.text + "9A"}
                         />
                         <Text
                             style={{
                                 fontFamily: "onest",
                                 fontWeight: 500,
-                                color: Colors.text + "9A",
+                                color: Colors.text,
                                 textTransform: "capitalize",
                             }}
                         >
@@ -120,7 +137,8 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
                         style={{
                             fontFamily: "onest",
                             fontWeight: 500,
-                            fontSize: 16,
+                            fontSize: 17,
+                            marginTop: 1
                         }}
                     >
                         {habit.title}
@@ -155,7 +173,7 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
                     )}
                 </Animated.View>
             </Pressable>
-        </View>
+        </Pressable>
     );
 };
 

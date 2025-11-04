@@ -4,6 +4,7 @@ import { SplashScreen, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import { loadAuthToken, useAuthStore } from "./store/auth-store";
+import { useUserStore } from "./store/user-store";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -13,7 +14,7 @@ export const unstable_settings = {
 
 export default function RootLayout() {
     const [loading, setLoading] = useState(true);
-    const token = useAuthStore((state) => state.token);
+    const {token} = useAuthStore()
     const [fontsLoaded, error] = useFonts({
         onest: require("../assets/fonts/Onest-VariableFont_wght.ttf"),
     });
@@ -44,11 +45,10 @@ export default function RootLayout() {
             <Stack.Protected guard={!!token}>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen
-                    name="create-habit"
+                    name="habit-ops"
                     options={{
                         presentation: "formSheet",
-                        sheetAllowedDetents: [0.7],
-                        title: "Create Habit",
+                        sheetAllowedDetents: [0.4],
                         contentStyle: { backgroundColor: Colors.background },
                         headerShadowVisible: false,
                     }}

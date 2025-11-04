@@ -2,7 +2,7 @@ import HabitCard from "@/components/habit-card";
 import { Colors } from "@/constants/theme";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { AddSquare, NotificationBing } from "iconsax-react-nativejs";
+import { AddSquare, Box1, NotificationBing } from "iconsax-react-nativejs";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -122,7 +122,7 @@ const Habits = () => {
     }, [user]);
 
     const createHabit = () => {
-        router.push("/create-habit");
+        router.push("/habit-ops");
         Haptics.selectionAsync();
     };
 
@@ -146,11 +146,6 @@ const Habits = () => {
                                 color={Colors.text}
                             />
                         </Pressable>
-                        <NotificationBing
-                            variant="Bold"
-                            size={25}
-                            color={Colors.text}
-                        />
                     </View>
                 }
             />
@@ -218,16 +213,88 @@ const Habits = () => {
                                     >
                                         My Habits
                                     </Text>
-                                    <Pressable onPress={createHabit}>
-                                        <AddSquare
-                                            variant="Bold"
-                                            size={25}
-                                            color={Colors.text}
-                                        />
-                                    </Pressable>
                                 </View>
 
                                 <FlatList
+                                    ListEmptyComponent={() => (
+                                        <View
+                                            style={{
+                                                flex: 1,
+                                                height: "100%",
+                                                marginTop: 50,
+                                                justifyContent: "center",
+                                                alignItems: "center",
+                                            }}
+                                        >
+                                            <View
+                                                style={{
+                                                    justifyContent: "center",
+                                                    alignItems: "center",
+                                                    width: 60,
+                                                    height: 60,
+                                                    borderRadius: 18,
+                                                    backgroundColor:
+                                                        Colors.text + "0A",
+                                                }}
+                                            >
+                                                <Box1
+                                                    variant="Bulk"
+                                                    size={40}
+                                                    color={Colors.text}
+                                                />
+                                            </View>
+                                            <Text
+                                                style={{
+                                                    marginTop: 20,
+                                                    fontSize: 16,
+                                                    fontFamily: "onest",
+                                                    fontWeight: 600,
+                                                    color: Colors.text,
+                                                    textAlign: "center",
+                                                }}
+                                            >
+                                                No Habits Yet
+                                            </Text>
+                                            <Text
+                                                style={{
+                                                    marginTop: 10,
+                                                    fontSize: 14,
+                                                    fontFamily: "onest",
+                                                    fontWeight: 500,
+                                                    color: Colors.text + "9A",
+                                                    textAlign: "center",
+                                                }}
+                                            >
+                                                You haven't created any habits
+                                                yet. {"\n"}
+                                                Get started by creating your
+                                                first habit
+                                            </Text>
+
+                                            <Pressable
+                                                onPress={createHabit}
+                                                style={{
+                                                    marginTop: 30,
+                                                    paddingVertical: 16,
+                                                    paddingHorizontal: 20,
+                                                    borderRadius: 20,
+                                                    backgroundColor:
+                                                        Colors.text,
+                                                }}
+                                            >
+                                                <Text
+                                                    style={[
+                                                        styles.text,
+                                                        {
+                                                            color: Colors.background,
+                                                        },
+                                                    ]}
+                                                >
+                                                    Create Habit
+                                                </Text>
+                                            </Pressable>
+                                        </View>
+                                    )}
                                     ItemSeparatorComponent={() => (
                                         <View
                                             style={{ marginVertical: 10 }}
@@ -244,6 +311,30 @@ const Habits = () => {
                                             token={token!}
                                             habit={item}
                                         />
+                                    )}
+                                    ListFooterComponent={() => (
+                                        <Pressable
+                                            onPress={createHabit}
+                                            style={{
+                                                alignSelf: "center",
+                                                marginTop: 30,
+                                                paddingVertical: 16,
+                                                paddingHorizontal: 20,
+                                                borderRadius: 20,
+                                                backgroundColor: Colors.text,
+                                            }}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.text,
+                                                    {
+                                                        color: Colors.background,
+                                                    },
+                                                ]}
+                                            >
+                                                Create Habit
+                                            </Text>
+                                        </Pressable>
                                     )}
                                 />
                             </View>

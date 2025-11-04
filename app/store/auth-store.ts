@@ -1,10 +1,9 @@
-import { create } from "zustand";
 import * as SecureStore from "expo-secure-store";
+import { create } from "zustand";
 
 interface AuthState {
     token: string | null;
     setToken: (t: string | null) => void;
-    signOut: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -12,18 +11,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     setToken: async (token) => {
         if (token) {
             await SecureStore.getItemAsync("token");
+            set({ token });
+        } else {
+            set({token: null})
         }
 
-        console.log;
-
-        set({ token });
-    },
-    signOut: async () => {
-        set({ token: null });
     },
 }));
 
 export const loadAuthToken = async () => {
-    const token = await SecureStore.getItemAsync("authToken");
+    const token = await SecureStore.getItemAsync("token");
     useAuthStore.getState().setToken(token);
 };

@@ -2,7 +2,7 @@ import Button from "@/components/button";
 import Input from "@/components/input";
 import { Colors } from "@/constants/theme";
 import { router } from "expo-router";
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from "expo-secure-store";
 import React, { useState } from "react";
 import {
     Keyboard,
@@ -12,11 +12,13 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuthStore } from "../store/auth-store";
 
 const SignIn = () => {
     const [email, setemail] = useState<string>("");
     const [password, setpassword] = useState<string>("");
     const [loading, setloading] = useState(false);
+    const { setToken } = useAuthStore();
 
     const signIn = async () => {
         setloading(true);
@@ -27,22 +29,22 @@ const SignIn = () => {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Access-Control-Allow-Origin": "*"
+                        "Access-Control-Allow-Origin": "*",
                     },
                     body: JSON.stringify({
                         email,
-                        password
-                    })
+                        password,
+                    }),
                 }
             );
             const data = await response.json();
 
             if (response.ok && data.token) {
-                await SecureStore.setItemAsync("token", data.token);
-                router.replace("/(tabs)")
+                setToken(data.token);
+                router.replace("/(tabs)");
             }
 
-            console.log(data)
+            console.log(data);
         } catch (error) {
             console.log(error);
         } finally {

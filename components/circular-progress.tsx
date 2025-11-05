@@ -57,13 +57,13 @@ const CircularProgress = ({
                 style={{
                     position: "absolute",
                     fontFamily: "onest",
-                    fontSize: 18,
-                    fontWeight: "800",
+                    fontSize: 22,
+                    fontWeight: "900",
                     color: Colors.text,
                 }}
             >
                 {progressPercent}
-                <Text style={{ color: Colors.text + "9A", fontSize: 12 }}>
+                <Text style={{ color: Colors.text + "9A", fontSize: 16 }}>
                     %
                 </Text>
             </Text>

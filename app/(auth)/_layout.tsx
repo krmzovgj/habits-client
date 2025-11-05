@@ -8,8 +8,8 @@ const Layout = () => {
             fontFamily: "onest",
             fontWeight: 500
         } }}>
-            <Stack.Screen options={{contentStyle: {backgroundColor: Colors.background}, title: "Sign In @ Habits"}} name="sign-in" />
-            <Stack.Screen options={{contentStyle: {backgroundColor: Colors.background}, title: "Create Account @ Habits"}} name="create-account" />
+            <Stack.Screen options={{contentStyle: {backgroundColor: Colors.background}, title: "Sign In @ habits"}} name="sign-in" />
+            <Stack.Screen options={{contentStyle: {backgroundColor: Colors.background}, title: "Create Account @ habits"}} name="create-account" />
         </Stack>
     );
 };

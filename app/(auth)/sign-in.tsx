@@ -1,10 +1,11 @@
 import Button from "@/components/button";
 import Input from "@/components/input";
 import { Colors } from "@/constants/theme";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+    Alert,
     Keyboard,
     Pressable,
     Text,
@@ -19,6 +20,14 @@ const SignIn = () => {
     const [password, setpassword] = useState<string>("");
     const [loading, setloading] = useState(false);
     const { setToken } = useAuthStore();
+
+    const { createdAccEmail } = useLocalSearchParams<{
+        createdAccEmail: string;
+    }>();
+
+    useEffect(() => {
+        setemail(createdAccEmail);
+    }, [createdAccEmail]);
 
     const signIn = async () => {
         setloading(true);
@@ -43,11 +52,10 @@ const SignIn = () => {
                 setToken(data.token);
                 await SecureStore.setItemAsync("token", data.token);
                 router.replace("/(tabs)");
+            } else {
+                Alert.alert(await data.message);
             }
-
-            console.log(data);
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
         } finally {
             setloading(false);
         }

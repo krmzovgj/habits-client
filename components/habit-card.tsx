@@ -1,24 +1,13 @@
 import { Frequency, Habit } from "@/app/models/habit";
 import { Colors } from "@/constants/theme";
 import { completeHabit } from "@/utils/completeHabit";
-import { habitColors } from "@/utils/habitColors";
 import * as Haptic from "expo-haptics";
 import { router } from "expo-router";
-import {
-    Cup,
-    RecordCircle,
-    Refresh,
-    TickCircle
-} from "iconsax-react-nativejs";
+import { RecordCircle, Refresh, TickCircle } from "iconsax-react-nativejs";
 import React, { useRef } from "react";
-import {
-    Alert,
-    Animated,
-    Easing,
-    Pressable,
-    Text,
-    View
-} from "react-native";
+import { Alert, Animated, Easing, Pressable, Text, View } from "react-native";
+import AnimatedPressable from "./animated-pressable";
+import FlameIcon from "./flame-icon";
 
 const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
     const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -54,16 +43,17 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
         await completeHabit(token, habit.id);
     };
 
-    const colorIndex = habit.id
-  .split("")
-  .reduce((acc, char) => acc + char.charCodeAt(0), 0) % habitColors.length;
-
     return (
-        <Pressable
+        <AnimatedPressable
             onPress={() => {
                 router.push({
                     pathname: "/habit-ops",
-                    params: { id: habit.id },
+                    params: {
+                        id: habit.id,
+                        title: habit.title,
+                        frequency: habit.frequency,
+                        color: habit.color,
+                    },
                 });
             }}
             style={{
@@ -79,8 +69,7 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
                     alignItems: "center",
                 }}
             >
-
-                <Refresh variant="Bulk" size={46}  color={`#${habit.color}`}/>
+                <Refresh variant="Bulk" size={46} color={`#${habit.color}`} />
 
                 <View>
                     <View
@@ -97,15 +86,12 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
                                 columnGap: 3,
                             }}
                         >
-                            <Cup
-                                variant="Bulk"
-                                size={14}
-                                color={
+                            <FlameIcon size={15} color={
                                     habit.streakCount === 0
                                         ? Colors.text
                                         : Colors.tint
-                                }
-                            />
+                                }  />
+
                             <Text
                                 style={{
                                     fontFamily: "onest",
@@ -141,7 +127,7 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
                             fontFamily: "onest",
                             fontWeight: 500,
                             fontSize: 17,
-                            marginTop: 1
+                            marginTop: 1,
                         }}
                     >
                         {habit.title}
@@ -176,7 +162,7 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
                     )}
                 </Animated.View>
             </Pressable>
-        </Pressable>
+        </AnimatedPressable>
     );
 };
 

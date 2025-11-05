@@ -36,7 +36,7 @@ const DailyProgress = ({
                 }}
             >
                 <CircularProgress
-                    size={80}
+                    size={100}
                     strokeWidth={10}
                     progressPercent={!isNaN(progress) ? progress : 0}
                 />
@@ -44,8 +44,8 @@ const DailyProgress = ({
                 <View
                     style={{
                         backgroundColor: Colors.text,
-                        width: 80,
-                        height: 80,
+                        width: 100,
+                        height: 100,
                         borderWidth: 2,
                         borderColor: Colors.text,
                         borderRadius: 50,
@@ -65,7 +65,7 @@ const DailyProgress = ({
                     >
                         <TickCircle
                             variant="Bulk"
-                            size={40}
+                            size={54}
                             color={"#66A786"}
                         />
                     </View>
@@ -73,9 +73,9 @@ const DailyProgress = ({
                         style={{
                             fontSize: 24,
                             position: "absolute",
-                            left: 20,
-                            top: 8,
-                            fontWeight: 800,
+                            left: 22,
+                            top: 14,
+                            fontWeight: 900,
                             marginTop: 6,
                             fontFamily: "onest",
                             color: Colors.background,
@@ -88,8 +88,8 @@ const DailyProgress = ({
                 <View
                     style={{
                         backgroundColor: Colors.text,
-                        width: 80,
-                        height: 80,
+                        width: 100,
+                        height: 100,
                         borderWidth: 2,
                         borderColor: Colors.text,
                         borderRadius: 50,
@@ -107,15 +107,15 @@ const DailyProgress = ({
                             right: -4,
                         }}
                     >
-                        <Timer variant="Bulk" size={40} color={Colors.tint} />
+                        <Timer variant="Bulk" size={54} color={Colors.tint} />
                     </View>
                     <Text
                         style={{
                             fontSize: 24,
                             position: "absolute",
-                            left: 20,
-                            top: 8,
-                            fontWeight: 800,
+                            left: 22,
+                            top: 14,
+                            fontWeight: 900,
                             marginTop: 6,
                             fontFamily: "onest",
                             color: Colors.background,

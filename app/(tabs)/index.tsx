@@ -1,3 +1,4 @@
+import AnimatedPressable from "@/components/animated-pressable";
 import Avatar from "@/components/avatar";
 import DailyProgress from "@/components/daily-progress";
 import HabitCard from "@/components/habit-card";
@@ -5,12 +6,18 @@ import { Colors } from "@/constants/theme";
 import { getHabits } from "@/utils/getHabits";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { Add, ArchiveBox, ClipboardText, TickCircle } from "iconsax-react-nativejs";
+import {
+    Add,
+    ArchiveBox,
+    ClipboardText,
+    TickCircle,
+} from "iconsax-react-nativejs";
 import React, { useEffect, useMemo, useState } from "react";
 import {
     ActivityIndicator,
     AppState,
     FlatList,
+    Image,
     Pressable,
     RefreshControl,
     ScrollView,
@@ -20,12 +27,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import io from "socket.io-client";
-import HabitIcon from "../../assets/images/habit.svg";
 import Header from "../../components/header";
 import { Habit } from "../models/habit";
 import { useAuthStore } from "../store/auth-store";
 import { useUserStore } from "../store/user-store";
-import AnimatedPressable from "@/components/animated-pressable";
+import FlameIcon from "@/components/flame-icon";
 
 const socket = io(process.env.EXPO_PUBLIC_BACKEND_URL!, {
     transports: ["websocket"],
@@ -178,7 +184,11 @@ const Habits = () => {
                             columnGap: 8,
                         }}
                     >
-                        <HabitIcon width={22} height={22} />
+                        <Image
+                            source={require("../../assets/images/logo.png")}
+                            style={{ width: 24, height: 24 }}
+                            resizeMode="contain"
+                        />
                         <Text
                             style={{
                                 fontFamily: "onest",
@@ -245,20 +255,30 @@ const Habits = () => {
                                 marginTop: 30,
                             }}
                         >
-                            <Text
-                                style={[
-                                    styles.text,
-                                    {
-                                        fontSize: 32,
-                                        fontWeight: 600,
-                                        display: "flex",
-                                        flexDirection: "row",
-                                        alignItems: "center",
-                                    },
-                                ]}
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    columnGap: 3
+                                }}
                             >
-                                Hi {user?.firstName},
-                            </Text>
+                                <Text
+                                    style={[
+                                        styles.text,
+                                        {
+                                            fontSize: 32,
+                                            fontWeight: 800,
+                                            display: "flex",
+                                            flexDirection: "row",
+                                            alignItems: "center",
+                                        },
+                                    ]}
+                                >
+                                    Hi {user?.firstName},
+                                </Text>
+                                    
+                                <FlameIcon size={32} color={Colors.tint} />
+                            </View>
 
                             <View
                                 style={{
@@ -301,7 +321,11 @@ const Habits = () => {
                                 <Text
                                     style={[
                                         styles.text,
-                                        { fontWeight: "600", fontSize: 20, marginBottom: 20, },
+                                        {
+                                            fontWeight: "600",
+                                            fontSize: 20,
+                                            marginBottom: 20,
+                                        },
                                     ]}
                                 >
                                     Progress

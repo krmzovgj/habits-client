@@ -4,12 +4,11 @@ import Input from "@/components/input";
 import { Colors } from "@/constants/theme";
 import { createHabit } from "@/utils/createHabit";
 import { deleteHabit } from "@/utils/deleteHabit";
-import { getHabitById } from "@/utils/getHabitById";
 import { habitColors } from "@/utils/habitColors";
 import { updateHabit } from "@/utils/updateHabit";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { Add, TickCircle, Trash } from "iconsax-react-nativejs";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -25,25 +24,26 @@ import { useAuthStore } from "./store/auth-store";
 
 const CreateHabit = () => {
     const { token } = useAuthStore();
-    const [title, settitle] = useState("");
-    const [frequency, setFrequency] = useState("DAILY");
+
+    const {
+        id,
+        title: initialTitle,
+        frequency: initialFrequency,
+        color: initialColor,
+    } = useLocalSearchParams<{
+        id?: string;
+        title?: string;
+        frequency?: string;
+        color?: string;
+    }>();
+
+    const [title, settitle] = useState(initialTitle ?? "");
+    const [frequency, setFrequency] = useState(initialFrequency ?? "DAILY");
     const [loading, setloading] = useState(false);
     const [deleteLoading, setdeleteLoading] = useState(false);
-    const [color, setcolor] = useState<string>("FF8C00");
+    const [color, setcolor] = useState(initialColor ?? "FF8C00");
 
-    const { id } = useLocalSearchParams<{ id?: string }>();
     const isEditing = !!id;
-
-    useEffect(() => {
-        if (isEditing) {
-            (async () => {
-                const habit = await getHabitById(token!, id);
-                settitle(habit.title);
-                setFrequency(habit.frequency);
-                setcolor(habit.color);
-            })();
-        }
-    }, [id]);
 
     const handleCreateHabit = async () => {
         try {
@@ -159,122 +159,112 @@ const CreateHabit = () => {
                     ),
                 }}
             />
-            <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-                <View style={{ flex: 1, padding: 20 }}>
-                    <Input
-                        autoFocus={true}
-                        label="Title"
-                        placeholder="eg. Daily Workout"
-                        onChangeText={settitle}
-                        value={title}
-                    />
+            <View style={{ flex: 1, padding: 20 }}>
+                <Input
+                    autoFocus={true}
+                    label="Title"
+                    placeholder="eg. Daily Workout"
+                    onChangeText={settitle}
+                    value={title}
+                />
+
+                <View
+                    style={{
+                        marginTop: 10,
+                    }}
+                >
+                    <Text
+                        style={{
+                            marginLeft: 6,
+                            marginBottom: 6,
+                            fontFamily: "onest",
+                            fontWeight: 500,
+                            fontSize: 16,
+                        }}
+                    >
+                        Frequency
+                    </Text>
 
                     <View
                         style={{
-                            marginTop: 10,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            columnGap: 6,
                         }}
                     >
-                        <Text
-                            style={{
-                                marginLeft: 6,
-                                marginBottom: 6,
-                                fontFamily: "onest",
-                                fontWeight: 500,
-                                fontSize: 16,
-                            }}
-                        >
-                            Frequency
-                        </Text>
-
-                        <View
-                            style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                                columnGap: 6,
-                            }}
-                        >
-                            <Button
-                                pressableStyle={{ flex: 1 }}
-                                title="Daily"
-                                variant={
-                                    frequency === "DAILY"
-                                        ? "primary"
-                                        : "secondary"
-                                }
-                                onPress={() => setFrequency("DAILY")}
-                            />
-                            <Button
-                                pressableStyle={{ flex: 1 }}
-                                title="Weekly"
-                                variant={
-                                    frequency === "WEEKLY"
-                                        ? "primary"
-                                        : "secondary"
-                                }
-                                onPress={() => setFrequency("WEEKLY")}
-                            />
-                        </View>
-
-                        <View style={{ marginTop: 10 }}></View>
-                        <Text
-                            style={{
-                                marginLeft: 6,
-                                marginBottom: 6,
-                                fontFamily: "onest",
-                                fontWeight: 500,
-                                fontSize: 16,
-                            }}
-                        >
-                            Habit Color
-                        </Text>
-
-                        <FlatList
-                            data={habitColors}
-                            style={{
-                                marginLeft: 6,
-                                marginBottom: 6,
-                            }}
-                            keyExtractor={(item) => item}
-                            horizontal
-                            renderItem={({ item }) => (
-                                <AnimatedPressable
-                                    onPress={() => setcolor(item)}
-                                >
-                                    <View
-                                        style={{
-                                            width: 35,
-                                            height: 35,
-                                            borderRadius: 14,
-                                            backgroundColor: '#' + item,
-                                            marginRight: 6,
-                                            justifyContent: "center",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        {item === color && (
-                                            <TickCircle
-                                                variant="Bold"
-                                                size={20}
-                                                color={Colors.background}
-                                            />
-                                        )}
-                                    </View>
-                                </AnimatedPressable>
-                            )}
+                        <Button
+                            pressableStyle={{ flex: 1 }}
+                            title="Daily"
+                            variant={
+                                frequency === "DAILY" ? "primary" : "secondary"
+                            }
+                            onPress={() => setFrequency("DAILY")}
+                        />
+                        <Button
+                            pressableStyle={{ flex: 1 }}
+                            title="Weekly"
+                            variant={
+                                frequency === "WEEKLY" ? "primary" : "secondary"
+                            }
+                            onPress={() => setFrequency("WEEKLY")}
                         />
                     </View>
 
-                    <Button
-                        title={isEditing ? "Save Habit" : "Create Habit"}
-                        variant="primary"
-                        onPress={
-                            isEditing ? handleUpdateHabit : handleCreateHabit
-                        }
-                        loading={loading}
-                        style={{ marginTop: 10 }}
+                    <View style={{ marginTop: 10 }}></View>
+                    <Text
+                        style={{
+                            marginLeft: 6,
+                            marginBottom: 6,
+                            fontFamily: "onest",
+                            fontWeight: 500,
+                            fontSize: 16,
+                        }}
+                    >
+                        Habit Color
+                    </Text>
+
+                    <FlatList
+                        data={habitColors}
+                        style={{
+                            marginLeft: 6,
+                            marginBottom: 6,
+                        }}
+                        keyExtractor={(item) => item}
+                        horizontal
+                        renderItem={({ item }) => (
+                            <AnimatedPressable onPress={() => setcolor(item)}>
+                                <View
+                                    style={{
+                                        width: 35,
+                                        height: 35,
+                                        borderRadius: 14,
+                                        backgroundColor: "#" + item,
+                                        marginRight: 6,
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    {item === color && (
+                                        <TickCircle
+                                            variant="Bold"
+                                            size={20}
+                                            color={Colors.background}
+                                        />
+                                    )}
+                                </View>
+                            </AnimatedPressable>
+                        )}
                     />
                 </View>
-            </TouchableWithoutFeedback>
+
+                <Button
+                    title={isEditing ? "Save Habit" : "Create Habit"}
+                    variant="primary"
+                    onPress={isEditing ? handleUpdateHabit : handleCreateHabit}
+                    loading={loading}
+                    style={{ marginTop: 10 }}
+                />
+            </View>
         </SafeAreaView>
     );
 };

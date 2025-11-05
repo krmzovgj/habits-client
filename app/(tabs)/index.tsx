@@ -32,15 +32,8 @@ import { Habit } from "../models/habit";
 import { useAuthStore } from "../store/auth-store";
 import { useUserStore } from "../store/user-store";
 import FlameIcon from "@/components/flame-icon";
+import { socket } from "@/utils/socket";
 
-const socket = io(process.env.EXPO_PUBLIC_BACKEND_URL!, {
-    transports: ["websocket"],
-    autoConnect: false,
-    reconnection: true,
-    reconnectionAttempts: Infinity,
-    reconnectionDelay: 1000,
-    reconnectionDelayMax: 5000,
-});
 
 const Habits = () => {
     const { token } = useAuthStore();

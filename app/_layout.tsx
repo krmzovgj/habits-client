@@ -14,8 +14,8 @@ export const unstable_settings = {
 
 export default function RootLayout() {
     const [loading, setLoading] = useState(true);
-    const { user } = useUserStore()
-    const {token} = useAuthStore()
+    const { user } = useUserStore();
+    const { token } = useAuthStore();
     const [fontsLoaded, error] = useFonts({
         onest: require("../assets/fonts/Onest-VariableFont_wght.ttf"),
     });
@@ -35,14 +35,13 @@ export default function RootLayout() {
             await loadAuthToken();
             const timer = setTimeout(() => setLoading(false), 1000);
             return () => clearTimeout(timer);
-
         };
         init();
     }, []);
 
     if (!fontsLoaded || loading) return null;
 
-    return (    
+    return (
         <Stack>
             <Stack.Protected guard={!!token}>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -51,6 +50,24 @@ export default function RootLayout() {
                     options={{
                         presentation: "formSheet",
                         sheetAllowedDetents: [0.5],
+                        contentStyle: { backgroundColor: Colors.background },
+                        headerShadowVisible: false,
+                    }}
+                />
+                <Stack.Screen
+                    name="user-ops"
+                    options={{
+                        presentation: "formSheet",
+                        sheetAllowedDetents: [0.55],
+                        contentStyle: { backgroundColor: Colors.background },
+                        headerShadowVisible: false,
+                    }}
+                />
+                <Stack.Screen
+                    name="delete-user"
+                    options={{
+                        presentation: "formSheet",
+                        sheetAllowedDetents: [0.4],
                         contentStyle: { backgroundColor: Colors.background },
                         headerShadowVisible: false,
                     }}

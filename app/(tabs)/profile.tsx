@@ -2,12 +2,22 @@ import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "@/components/header";
-import { Logout, LogoutCurve, Setting2 } from "iconsax-react-nativejs";
+import {
+    Edit,
+    Edit2,
+    Logout,
+    LogoutCurve,
+    Setting2,
+    Trash,
+} from "iconsax-react-nativejs";
 import { Colors } from "@/constants/theme";
 import { useUserStore } from "../store/user-store";
 import * as SecureStore from "expo-secure-store";
 import { useAuthStore } from "../store/auth-store";
 import Avatar from "@/components/avatar";
+import Button from "@/components/button";
+import { router } from "expo-router";
+import AnimatedPressable from "@/components/animated-pressable";
 
 const Profile = () => {
     const { user, setUser } = useUserStore();
@@ -41,13 +51,17 @@ const Profile = () => {
             <Header
                 title="Profile"
                 headerRight={
-                    <Setting2 variant="Bold" size={25} color={Colors.text} />
+                    <AnimatedPressable onPress={() => router.push("/delete-user")}>
+
+                    <Trash variant="Bulk" size={25} color={'red'} />
+                    </AnimatedPressable>
                 }
             />
             <View
                 style={{
                     marginTop: 30,
                     flex: 1,
+                    
                 }}
             >
                 <View
@@ -64,7 +78,7 @@ const Profile = () => {
                         height={60}
                         fontSize={22}
                     />
-                    
+
                     <View>
                         <Text
                             style={{
@@ -88,31 +102,49 @@ const Profile = () => {
                     </View>
                 </View>
 
-                <Pressable
-                    onPress={signOut}
+                <View
                     style={{
-                        marginTop: 30,
-                        paddingVertical: 16,
-                        paddingHorizontal: 20,
-                        borderRadius: 20,
-                        backgroundColor: Colors.text + "0A",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        alignSelf: "flex-start",
-                        columnGap: 8,
+                        marginTop: 40,
+                        flexDirection: "column",
+                        rowGap: 8,
                     }}
                 >
-                    <LogoutCurve variant="Linear" size={20} color="red" />
                     <Text
                         style={{
+                            marginLeft: 6,
+                            marginBottom: 6,
                             fontFamily: "onest",
-                            fontWeight: 500,
-                            color: Colors.text,
+                            fontWeight: "500",
+                            fontSize: 16,
                         }}
                     >
-                        Sign Out
+                        Options
                     </Text>
-                </Pressable>
+                    <Button
+                        icon={
+                            <Edit
+                                variant="Bulk"
+                                size={20}
+                                color={Colors.text}
+                            />
+                        }
+                        variant="secondary"
+                        title="Edit Profile"
+                        onPress={() => router.push("/user-ops")}
+                    />
+                    <Button
+                        icon={
+                            <LogoutCurve
+                                variant="Bulk"
+                                size={20}
+                                color="red"
+                            />
+                        }
+                        variant="secondary"
+                        title="Sign Out"
+                        onPress={signOut}
+                    />
+                </View>
             </View>
         </SafeAreaView>
     );

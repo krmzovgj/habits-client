@@ -13,11 +13,9 @@ import {
     ActivityIndicator,
     Alert,
     FlatList,
-    Keyboard,
     Pressable,
     Text,
-    TouchableWithoutFeedback,
-    View,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "./store/auth-store";

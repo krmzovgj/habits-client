@@ -1,12 +1,19 @@
+import AnimatedPressable from "@/components/animated-pressable";
 import Button from "@/components/button";
 import Input from "@/components/input";
 import { Colors } from "@/constants/theme";
+import { createHabit } from "@/utils/createHabit";
+import { deleteHabit } from "@/utils/deleteHabit";
 import { getHabitById } from "@/utils/getHabitById";
+import { habitColors } from "@/utils/habitColors";
+import { updateHabit } from "@/utils/updateHabit";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { Add, Trash } from "iconsax-react-nativejs";
+import { Add, TickCircle, Trash } from "iconsax-react-nativejs";
 import React, { useEffect, useState } from "react";
 import {
+    ActivityIndicator,
     Alert,
+    FlatList,
     Keyboard,
     Pressable,
     Text,
@@ -15,15 +22,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "./store/auth-store";
-import { updateHabit } from "@/utils/updateHabit";
-import { createHabit } from "@/utils/createHabit";
-import { deleteHabit } from "@/utils/deleteHabit";
 
 const CreateHabit = () => {
     const { token } = useAuthStore();
     const [title, settitle] = useState("");
     const [frequency, setFrequency] = useState("DAILY");
     const [loading, setloading] = useState(false);
+    const [deleteLoading, setdeleteLoading] = useState(false);
+    const [color, setcolor] = useState<string>("FF8C00");
 
     const { id } = useLocalSearchParams<{ id?: string }>();
     const isEditing = !!id;
@@ -34,6 +40,7 @@ const CreateHabit = () => {
                 const habit = await getHabitById(token!, id);
                 settitle(habit.title);
                 setFrequency(habit.frequency);
+                setcolor(habit.color);
             })();
         }
     }, [id]);
@@ -41,7 +48,7 @@ const CreateHabit = () => {
     const handleCreateHabit = async () => {
         try {
             setloading(true);
-            await createHabit(token!, title, frequency);
+            await createHabit(token!, title, frequency, color!);
         } catch (error) {
             console.log(error);
         } finally {
@@ -52,7 +59,7 @@ const CreateHabit = () => {
     const handleUpdateHabit = async () => {
         try {
             setloading(true);
-            await updateHabit(token!, title, frequency, id!);
+            await updateHabit(token!, title, color!, frequency!, id!);
         } catch (error) {
             console.log(error);
         } finally {
@@ -67,12 +74,22 @@ const CreateHabit = () => {
             [
                 {
                     text: "Cancel",
-                    style: "cancel", // non-destructive
+                    style: "cancel",
                 },
                 {
                     text: "Delete",
-                    style: "destructive", // red button on iOS
-                    onPress: () => deleteHabit(token!, id!),
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            setdeleteLoading(true);
+                            await deleteHabit(token!, id!);
+                            router.back();
+                        } catch (error) {
+                            console.log(error);
+                        } finally {
+                            setdeleteLoading(false);
+                        }
+                    },
                 },
             ],
             { cancelable: true }
@@ -86,21 +103,39 @@ const CreateHabit = () => {
                     title: isEditing ? "Edit Habit" : "Create Habit",
                     headerLeft: isEditing
                         ? () => (
-                              <Pressable
-                                  onPress={confirmDeleteHabit}
-                                  style={{
-                                      width: 36,
-                                      height: 36,
-                                      justifyContent: "center",
-                                      alignItems: "center",
-                                  }}
-                              >
-                                  <Trash
-                                      variant="Linear"
-                                      size={24}
-                                      color="red"
-                                  />
-                              </Pressable>
+                              <View>
+                                  {deleteLoading ? (
+                                      <View
+                                          style={{
+                                              width: 36,
+                                              height: 36,
+                                              justifyContent: "center",
+                                              alignItems: "center",
+                                          }}
+                                      >
+                                          <ActivityIndicator
+                                              size="small"
+                                              color={Colors.text}
+                                          />
+                                      </View>
+                                  ) : (
+                                      <Pressable
+                                          onPress={confirmDeleteHabit}
+                                          style={{
+                                              width: 36,
+                                              height: 36,
+                                              justifyContent: "center",
+                                              alignItems: "center",
+                                          }}
+                                      >
+                                          <Trash
+                                              variant="Linear"
+                                              size={24}
+                                              color="red"
+                                          />
+                                      </Pressable>
+                                  )}
+                              </View>
                           )
                         : undefined,
                     headerRight: () => (
@@ -136,7 +171,7 @@ const CreateHabit = () => {
 
                     <View
                         style={{
-                            paddingTop: 10,
+                            marginTop: 10,
                         }}
                     >
                         <Text
@@ -159,7 +194,7 @@ const CreateHabit = () => {
                             }}
                         >
                             <Button
-                                style={{ flex: 1 }}
+                                pressableStyle={{ flex: 1 }}
                                 title="Daily"
                                 variant={
                                     frequency === "DAILY"
@@ -169,7 +204,7 @@ const CreateHabit = () => {
                                 onPress={() => setFrequency("DAILY")}
                             />
                             <Button
-                                style={{ flex: 1 }}
+                                pressableStyle={{ flex: 1 }}
                                 title="Weekly"
                                 variant={
                                     frequency === "WEEKLY"
@@ -179,6 +214,54 @@ const CreateHabit = () => {
                                 onPress={() => setFrequency("WEEKLY")}
                             />
                         </View>
+
+                        <View style={{ marginTop: 10 }}></View>
+                        <Text
+                            style={{
+                                marginLeft: 6,
+                                marginBottom: 6,
+                                fontFamily: "onest",
+                                fontWeight: 500,
+                                fontSize: 16,
+                            }}
+                        >
+                            Habit Color
+                        </Text>
+
+                        <FlatList
+                            data={habitColors}
+                            style={{
+                                marginLeft: 6,
+                                marginBottom: 6,
+                            }}
+                            keyExtractor={(item) => item}
+                            horizontal
+                            renderItem={({ item }) => (
+                                <AnimatedPressable
+                                    onPress={() => setcolor(item)}
+                                >
+                                    <View
+                                        style={{
+                                            width: 35,
+                                            height: 35,
+                                            borderRadius: 14,
+                                            backgroundColor: '#' + item,
+                                            marginRight: 6,
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        {item === color && (
+                                            <TickCircle
+                                                variant="Bold"
+                                                size={20}
+                                                color={Colors.background}
+                                            />
+                                        )}
+                                    </View>
+                                </AnimatedPressable>
+                            )}
+                        />
                     </View>
 
                     <Button

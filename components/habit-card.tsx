@@ -1,26 +1,24 @@
 import { Frequency, Habit } from "@/app/models/habit";
 import { Colors } from "@/constants/theme";
 import { completeHabit } from "@/utils/completeHabit";
+import { habitColors } from "@/utils/habitColors";
+import * as Haptic from "expo-haptics";
+import { router } from "expo-router";
 import {
     Cup,
     RecordCircle,
-    RefreshSquare,
-    Star1,
-    TickCircle,
+    Refresh,
+    TickCircle
 } from "iconsax-react-nativejs";
 import React, { useRef } from "react";
 import {
     Alert,
     Animated,
     Easing,
-    Image,
     Pressable,
     Text,
-    View,
+    View
 } from "react-native";
-import * as Haptic from "expo-haptics";
-import HabitIcon from "../assets/images/habit.svg";
-import { router } from "expo-router";
 
 const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
     const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -56,6 +54,10 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
         await completeHabit(token, habit.id);
     };
 
+    const colorIndex = habit.id
+  .split("")
+  .reduce((acc, char) => acc + char.charCodeAt(0), 0) % habitColors.length;
+
     return (
         <Pressable
             onPress={() => {
@@ -77,7 +79,8 @@ const HabitCard = ({ token, habit }: { token: string; habit: Habit }) => {
                     alignItems: "center",
                 }}
             >
-                <HabitIcon width={46} height={46} />
+
+                <Refresh variant="Bulk" size={46}  color={`#${habit.color}`}/>
 
                 <View>
                     <View

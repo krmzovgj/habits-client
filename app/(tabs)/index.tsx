@@ -1,11 +1,15 @@
+import Avatar from "@/components/avatar";
+import DailyProgress from "@/components/daily-progress";
 import HabitCard from "@/components/habit-card";
 import { Colors } from "@/constants/theme";
+import { getHabits } from "@/utils/getHabits";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { AddSquare, Box1, NotificationBing } from "iconsax-react-nativejs";
-import React, { useEffect, useState } from "react";
+import { Add, ArchiveBox, ClipboardText, TickCircle } from "iconsax-react-nativejs";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     ActivityIndicator,
+    AppState,
     FlatList,
     Pressable,
     RefreshControl,
@@ -16,46 +20,40 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import io from "socket.io-client";
+import HabitIcon from "../../assets/images/habit.svg";
 import Header from "../../components/header";
 import { Habit } from "../models/habit";
 import { useAuthStore } from "../store/auth-store";
 import { useUserStore } from "../store/user-store";
+import AnimatedPressable from "@/components/animated-pressable";
 
 const socket = io(process.env.EXPO_PUBLIC_BACKEND_URL!, {
     transports: ["websocket"],
+    autoConnect: false,
+    reconnection: true,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
 });
+
 const Habits = () => {
     const { token } = useAuthStore();
     const { user, setUser } = useUserStore();
     const [loading, setloading] = useState(false);
     const [habits, sethabits] = useState<Habit[]>([]);
 
-    const getHabits = async () => {
+    const fetchHabits = async () => {
         try {
-            const response = await fetch(
-                `${process.env.EXPO_PUBLIC_BACKEND_URL}/habit`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Access-Control-Allow-Origin": "*",
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            if (response.ok) {
-                const data = await response.json();
-                sethabits(data);
-            }
+            const habitsResponse = await getHabits(token!);
+            sethabits(habitsResponse);
         } catch (error) {
-            console.log(error);
+            console.error("Error fetching habits:", error);
         }
     };
 
     useEffect(() => {
         if (!token) return;
-        setloading(true);
+
         const getUser = async () => {
             try {
                 const response = await fetch(
@@ -74,6 +72,9 @@ const Habits = () => {
                     const user = await response.json();
                     setUser(user);
 
+                    if (!socket.connected) {
+                        socket.connect();
+                    }
                     socket.emit("joinRoom", { id: user.id });
                 }
             } catch (error) {
@@ -83,12 +84,41 @@ const Habits = () => {
             }
         };
 
+        setloading(true);
         getUser();
-        getHabits();
+        fetchHabits();
     }, [token]);
 
     useEffect(() => {
         if (!user?.id) return;
+
+        const handleConnect = () => {
+            console.log("✅ Socket connected");
+            socket.emit("joinRoom", { id: user.id });
+        };
+
+        const handleReconnect = () => {
+            console.log("♻️ Socket reconnected");
+            socket.emit("joinRoom", { id: user.id });
+        };
+
+        const handleDisconnect = () => {
+            console.log("❌ Socket disconnected");
+        };
+
+        socket.on("connect", handleConnect);
+        socket.on("reconnect", handleReconnect);
+        socket.on("disconnect", handleDisconnect);
+
+        const subscription = AppState.addEventListener(
+            "change",
+            (nextState) => {
+                if (nextState === "active" && !socket.connected) {
+                    console.log("🔄 Reconnecting socket after app resume");
+                    socket.connect();
+                }
+            }
+        );
 
         socket.on("newHabit", (newHabit: Habit) => {
             sethabits((prev) => [newHabit, ...prev]);
@@ -115,9 +145,14 @@ const Habits = () => {
         });
 
         return () => {
+            subscription.remove();
+            socket.off("connect", handleConnect);
+            socket.off("reconnect", handleReconnect);
+            socket.off("disconnect", handleDisconnect);
             socket.off("newHabit");
             socket.off("habitUpdated");
             socket.off("habitDeleted");
+            socket.off("habitCompleted");
         };
     }, [user]);
 
@@ -126,10 +161,35 @@ const Habits = () => {
         Haptics.selectionAsync();
     };
 
+    const uncompleteHabits = useMemo(
+        () => habits.filter((habit) => !habit.completed),
+        [habits]
+    );
+
     return (
         <SafeAreaView edges={["top"]} style={{ padding: 20, flex: 1 }}>
             <Header
-                title="Home"
+                title=""
+                headerLeft={
+                    <View
+                        style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            columnGap: 8,
+                        }}
+                    >
+                        <HabitIcon width={22} height={22} />
+                        <Text
+                            style={{
+                                fontFamily: "onest",
+                                fontWeight: 700,
+                                fontSize: 22,
+                            }}
+                        >
+                            habits
+                        </Text>
+                    </View>
+                }
                 headerRight={
                     <View
                         style={{
@@ -139,13 +199,17 @@ const Habits = () => {
                             display: "flex",
                         }}
                     >
-                        <Pressable onPress={createHabit}>
-                            <AddSquare
-                                variant="Bold"
-                                size={25}
-                                color={Colors.text}
-                            />
-                        </Pressable>
+                        {user ? (
+                            <Pressable onPress={() => router.push("/profile")}>
+                                <Avatar
+                                    firstName={user.firstName ?? ""}
+                                    lastName={user.lastName ?? ""}
+                                    width={40}
+                                    height={40}
+                                    fontSize={14}
+                                />
+                            </Pressable>
+                        ) : null}
                     </View>
                 }
             />
@@ -161,17 +225,16 @@ const Habits = () => {
                     <ActivityIndicator size="small" color={Colors.text} />
                 </View>
             ) : (
-                <View>
+                <View style={{ flex: 1 }}>
                     <ScrollView
-                        scrollEnabled={habits.length >= 8 ? true : false}
                         contentContainerStyle={{
-                            paddingBottom: 110,
+                            paddingBottom: 170,
 
                             backgroundColor: Colors.background,
                         }}
                         refreshControl={
                             <RefreshControl
-                                onRefresh={getHabits}
+                                onRefresh={fetchHabits}
                                 refreshing={false}
                             />
                         }
@@ -194,10 +257,60 @@ const Habits = () => {
                                     },
                                 ]}
                             >
-                                Hi {user?.firstName}
+                                Hi {user?.firstName},
                             </Text>
 
-                            <View style={{ marginTop: 60 }}>
+                            <View
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    columnGap: 4,
+                                    marginTop: 2,
+                                }}
+                            >
+                                {uncompleteHabits.length === 0 ? (
+                                    <TickCircle
+                                        variant="Bold"
+                                        size={14}
+                                        color={Colors.text}
+                                    />
+                                ) : (
+                                    <ClipboardText
+                                        variant="Bold"
+                                        size={14}
+                                        color={Colors.text}
+                                    />
+                                )}
+                                <Text
+                                    style={[
+                                        styles.text,
+                                        {
+                                            fontWeight: 500,
+                                            color: Colors.text + "9A",
+                                        },
+                                    ]}
+                                >
+                                    {uncompleteHabits.length === 0
+                                        ? "Habits completed - All caught up for today"
+                                        : `${uncompleteHabits.length} habit left for today's schedule`}
+                                </Text>
+                            </View>
+
+                            <View style={{ marginTop: 40 }}>
+                                <Text
+                                    style={[
+                                        styles.text,
+                                        { fontWeight: "600", fontSize: 20, marginBottom: 20, },
+                                    ]}
+                                >
+                                    Progress
+                                </Text>
+                                <DailyProgress
+                                    uncompleteHabits={uncompleteHabits.length}
+                                    habits={habits}
+                                />
+
                                 <View
                                     style={{
                                         flexDirection: "row",
@@ -220,8 +333,7 @@ const Habits = () => {
                                         <View
                                             style={{
                                                 flex: 1,
-                                                height: "100%",
-                                                marginTop: 50,
+                                                marginTop: 25,
                                                 justifyContent: "center",
                                                 alignItems: "center",
                                             }}
@@ -237,15 +349,15 @@ const Habits = () => {
                                                         Colors.text + "0A",
                                                 }}
                                             >
-                                                <Box1
+                                                <ArchiveBox
                                                     variant="Bulk"
-                                                    size={40}
+                                                    size={36}
                                                     color={Colors.text}
                                                 />
                                             </View>
                                             <Text
                                                 style={{
-                                                    marginTop: 20,
+                                                    marginTop: 30,
                                                     fontSize: 16,
                                                     fontFamily: "onest",
                                                     fontWeight: 600,
@@ -270,29 +382,6 @@ const Habits = () => {
                                                 Get started by creating your
                                                 first habit
                                             </Text>
-
-                                            <Pressable
-                                                onPress={createHabit}
-                                                style={{
-                                                    marginTop: 30,
-                                                    paddingVertical: 16,
-                                                    paddingHorizontal: 20,
-                                                    borderRadius: 20,
-                                                    backgroundColor:
-                                                        Colors.text,
-                                                }}
-                                            >
-                                                <Text
-                                                    style={[
-                                                        styles.text,
-                                                        {
-                                                            color: Colors.background,
-                                                        },
-                                                    ]}
-                                                >
-                                                    Create Habit
-                                                </Text>
-                                            </Pressable>
                                         </View>
                                     )}
                                     ItemSeparatorComponent={() => (
@@ -312,34 +401,38 @@ const Habits = () => {
                                             habit={item}
                                         />
                                     )}
-                                    ListFooterComponent={() => (
-                                        <Pressable
-                                            onPress={createHabit}
-                                            style={{
-                                                alignSelf: "center",
-                                                marginTop: 30,
-                                                paddingVertical: 16,
-                                                paddingHorizontal: 20,
-                                                borderRadius: 20,
-                                                backgroundColor: Colors.text,
-                                            }}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.text,
-                                                    {
-                                                        color: Colors.background,
-                                                    },
-                                                ]}
-                                            >
-                                                Create Habit
-                                            </Text>
-                                        </Pressable>
-                                    )}
                                 />
                             </View>
                         </View>
                     </ScrollView>
+
+                    <AnimatedPressable
+                        onPress={createHabit}
+                        style={{
+                            position: "absolute",
+                            bottom: 80,
+                            alignSelf: "center",
+                            paddingVertical: 16,
+                            paddingHorizontal: 20,
+                            borderRadius: 20,
+                            alignItems: "center",
+                            columnGap: 6,
+                            flexDirection: "row",
+                            backgroundColor: Colors.text,
+                        }}
+                    >
+                        <Add variant="Linear" size={22} color={Colors.tint} />
+                        <Text
+                            style={[
+                                styles.text,
+                                {
+                                    color: Colors.background,
+                                },
+                            ]}
+                        >
+                            Create Habit
+                        </Text>
+                    </AnimatedPressable>
                 </View>
             )}
         </SafeAreaView>

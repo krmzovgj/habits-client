@@ -5,6 +5,7 @@ export const createHabit = async (
   token: string,
   title: string,
   frequency: string,
+  color: string
 ) => {
   if (!token) return;
 
@@ -26,6 +27,7 @@ export const createHabit = async (
         body: JSON.stringify({
           title,
           frequency,
+          color
         }),
       }
     );

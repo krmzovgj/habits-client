@@ -1,68 +1,94 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
-    TouchableOpacity,
-    Text,
-    ActivityIndicator,
-    StyleSheet,
-    ViewStyle,
-    Pressable,
+  Animated,
+  Pressable,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+  Easing,
 } from "react-native";
 import { Colors } from "@/constants/theme";
 
 type ButtonProps = {
-    title: string;
-    onPress: () => void;
-    loading?: boolean;
-    disabled?: boolean;
-    variant?: "primary" | "secondary";
-    style?: ViewStyle;
+  title: string;
+  onPress: () => void;
+  loading?: boolean;
+  disabled?: boolean;
+  variant?: "primary" | "secondary";
+  style?: StyleProp<ViewStyle>;
+  pressableStyle?: StyleProp<ViewStyle>
 };
 
 const Button: React.FC<ButtonProps> = ({
-    title,
-    onPress,
-    loading = false,
-    disabled = false,
-    variant = "primary",
-    style,
+  title,
+  onPress,
+  loading = false,
+  disabled = false,
+  variant = "primary",
+  style,
+  pressableStyle
 }) => {
-    const backgroundColor =
-        variant === "primary" ? Colors.text : Colors.text + "1A";
-    const foreground = variant === "primary" ? Colors.background : Colors.text;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
-    return (
-        <Pressable
-            onPress={onPress}
-            disabled={disabled || loading}
-            style={[
-                styles.button,
-                { backgroundColor: disabled ? "#ccc" : backgroundColor },
-                style,
-            ]}
-        >
-            {loading ? (
-                <ActivityIndicator size={"small"} color={foreground} />
-            ) : (
-                <Text style={[styles.text, { color: foreground }]}>
-                    {title}
-                </Text>
-            )}
-        </Pressable>
-    );
+  const handlePress = () => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.95,
+        duration: 100,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 6,
+        tension: 80,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    onPress?.();
+  };
+
+  const backgroundColor =
+    variant === "primary" ? Colors.text : Colors.text + "1A";
+  const foreground = variant === "primary" ? Colors.background : Colors.text;
+
+  return (
+    <Pressable onPress={handlePress} style={pressableStyle} disabled={disabled || loading}>
+      <Animated.View
+        style={[
+          {
+            transform: [{ scale: scaleAnim }],
+            backgroundColor: disabled ? "#ccc" : backgroundColor,
+          },
+          styles.button,
+          style,
+        ]}
+      >
+        {loading ? (
+          <ActivityIndicator size="small" color={foreground} />
+        ) : (
+          <Text style={[styles.text, { color: foreground }]}>{title}</Text>
+        )}
+      </Animated.View>
+    </Pressable>
+  );
 };
 
 export default Button;
 
 const styles = StyleSheet.create({
-    button: {
-        paddingVertical: 16,
-        borderRadius: 20,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    text: {
-        fontSize: 16,
-        fontFamily: "onest",
-        fontWeight: "500",
-    },
+  button: {
+    paddingVertical: 16,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  text: {
+    fontSize: 16,
+    fontFamily: "onest",
+    fontWeight: "500",
+  },
 });

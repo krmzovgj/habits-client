@@ -3,11 +3,12 @@ import React, { ReactNode } from "react";
 import { Colors } from "@/constants/theme";
 
 type HeaderProps = {
-    title: string;
+    title?: string;
+    headerLeft?: ReactNode;
     headerRight?: ReactNode;
 };
 
-const Header: React.FC<HeaderProps> = ({ title, headerRight }) => {
+const Header: React.FC<HeaderProps> = ({ title, headerLeft, headerRight }) => {
     return (
         <View
             style={{
@@ -17,11 +18,20 @@ const Header: React.FC<HeaderProps> = ({ title, headerRight }) => {
                 flexDirection: "row",
             }}
         >
-            <Text
-                style={{ color: Colors.text, fontFamily: "onest", fontWeight: "600", fontSize: 20 }}
-            >
-                {title}
-            </Text>
+            {headerLeft ? (
+                <View>{headerLeft}</View>
+            ) : (
+                <Text
+                    style={{
+                        color: Colors.text,
+                        fontFamily: "onest",
+                        fontWeight: "600",
+                        fontSize: 20,
+                    }}
+                >
+                    {title}
+                </Text>
+            )}
 
             {headerRight && <View>{headerRight}</View>}
         </View>

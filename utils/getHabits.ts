@@ -1,13 +1,9 @@
-import { Alert } from "react-native";
-
-export const deleteHabit = async (token: string, habitId: string) => {
+export const getHabits = async (token: string) => {
     try {
-        if (!token) return;
-
         const response = await fetch(
-            `${process.env.EXPO_PUBLIC_BACKEND_URL}/habit/${habitId}`,
+            `${process.env.EXPO_PUBLIC_BACKEND_URL}/habit`,
             {
-                method: "DELETE",
+                method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Origin": "*",
@@ -15,7 +11,13 @@ export const deleteHabit = async (token: string, habitId: string) => {
                 },
             }
         );
+
+        if (response.ok) {
+            const data = await response.json();
+            return data
+        }
     } catch (error) {
-        Alert.alert("Failed to delete habit. Please try again.");
+        console.log(error);
     }
+
 };

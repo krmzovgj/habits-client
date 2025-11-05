@@ -4,6 +4,7 @@ import { Alert } from "react-native";
 export const updateHabit = async (
   token: string,
   title: string,
+  color: string,
   frequency: string,
   id: string
 ) => {
@@ -13,7 +14,7 @@ export const updateHabit = async (
     Alert.alert("Habit must include a title");
     return;
   }
-
+  
   try {
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BACKEND_URL}/habit/${id}`,
@@ -27,6 +28,7 @@ export const updateHabit = async (
         body: JSON.stringify({
           title,
           frequency,
+          color
         }),
       }
     );

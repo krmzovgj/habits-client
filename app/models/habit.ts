@@ -3,6 +3,7 @@ import { User } from "./user";
 export interface Habit {
     id: string,
     title: string,
+    color: string,
     userId: number,
     User: User,
     frequency: Frequency,

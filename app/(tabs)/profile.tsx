@@ -7,6 +7,7 @@ import { Colors } from "@/constants/theme";
 import { useUserStore } from "../store/user-store";
 import * as SecureStore from "expo-secure-store";
 import { useAuthStore } from "../store/auth-store";
+import Avatar from "@/components/avatar";
 
 const Profile = () => {
     const { user, setUser } = useUserStore();
@@ -56,23 +57,14 @@ const Profile = () => {
                         columnGap: 8,
                     }}
                 >
-                    <View
-                        style={{
-                            width: 60,
-                            justifyContent: "center",
-                            flexDirection: "row",
-                            alignItems: "center",
-                            height: 60,
-                            backgroundColor: Colors.text + "0A",
-                            borderRadius: 50,
-                        }}
-                    >
-                        <Text style={styles.initials}>
-                            {user?.firstName[0]}
-                        </Text>
-                        <Text style={styles.initials}>{user?.lastName[0]}</Text>
-                    </View>
-
+                    <Avatar
+                        firstName={user?.firstName!}
+                        lastName={user?.lastName!}
+                        width={60}
+                        height={60}
+                        fontSize={22}
+                    />
+                    
                     <View>
                         <Text
                             style={{
@@ -127,11 +119,3 @@ const Profile = () => {
 };
 
 export default Profile;
-
-const styles = StyleSheet.create({
-    initials: {
-        fontFamily: "onest",
-        fontWeight: 800,
-        fontSize: 22,
-    },
-});

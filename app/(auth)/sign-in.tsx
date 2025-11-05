@@ -39,8 +39,9 @@ const SignIn = () => {
             );
             const data = await response.json();
 
-            if (response.ok && data.token) {
+            if (response.ok) {
                 setToken(data.token);
+                await SecureStore.setItemAsync("token", data.token);
                 router.replace("/(tabs)");
             }
 

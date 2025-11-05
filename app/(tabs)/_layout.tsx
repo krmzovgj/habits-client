@@ -5,24 +5,26 @@ export default function TabLayout() {
         <NativeTabs>
             <NativeTabs.Trigger
                 name="index"
-                 options={{
+                options={{
                     labelStyle: {
                         fontFamily: "onest",
                         fontSize: 11,
-                        fontWeight: "500"
+                        fontWeight: "500",
                     },
+
                     iconColor: "#000",
                 }}
             >
                 <Label>Home</Label>
-                <Icon sf='house.fill'  />
+                <Icon sf="house.fill" />
             </NativeTabs.Trigger>
+
             <NativeTabs.Trigger
                 options={{
                     labelStyle: {
                         fontFamily: "onest",
                         fontSize: 11,
-                        fontWeight: "500"
+                        fontWeight: "500",
                     },
                     iconColor: "#000",
                 }}
